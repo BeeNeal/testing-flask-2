@@ -18,18 +18,18 @@ class PartyTests(unittest.TestCase):
     def test_no_rsvp_yet(self):
         # FIXME: Add a test to show we see the RSVP form, but NOT the
         # party details
-        results = self.client.get("/")
-        self.assertIn("Oooh! I want to come!", results.data)
-        self.assertNotIn("123 Magic Unicorn Way", results.data)
+        result = self.client.get("/")
+        self.assertIn("Oooh! I want to come!", result.data)
+        self.assertNotIn("123 Magic Unicorn Way", result.data)
 
     def test_rsvp(self):
         result = self.client.post("/rsvp",
                                   data={"name": "Jane",
                                         "email": "jane@jane.com"},
                                   follow_redirects=True)
-        # FIXME: Once we RSVP, we should see the party details, but
-        # not the RSVP form
-        print "FIXME"
+        self.assertNotIn("Oooh! I want to come!", result.data)
+        self.assertIn("123 Magic Unicorn Way", result.data)
+
 #No tear down? Not needed when using 'with'?
 
 class PartyTestsDatabase(unittest.TestCase):
@@ -42,23 +42,26 @@ class PartyTestsDatabase(unittest.TestCase):
         app.config['TESTING'] = True
 
         # Connect to test database (uncomment when testing database)
-        # connect_to_db(app, "postgresql:///testdb")
+        connect_to_db(app, "postgresql:///testdb")
 
         # Create tables and add sample data (uncomment when testing database)
-        # db.create_all()
-        # example_data()
+        db.create_all()
+        example_data()
 
     def tearDown(self):
         """Do at end of every test."""
 
         # (uncomment when testing database)
-        # db.session.close()
-        # db.drop_all()
+        db.session.close()
+        db.drop_all()
 
     def test_games(self):
-        #FIXME: test that the games page displays the game from example_data()
-        print "FIXME"
+        """Checks that games from database show up on games page."""
+        result = self.client.get('/games')
 
+        # Assertions check that desc shows and that multiple games show up.
+        self.assertIn('A game about winemaking', result.data)
+        self.assertIn('Cytosis', result.data)
 
 if __name__ == "__main__":
     unittest.main()
